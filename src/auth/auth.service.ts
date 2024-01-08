@@ -1,19 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/types/user';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
+  testUser: Partial<User>;
+
+  constructor(private jwtService: JwtService) {
+    this.testUser = {
+      user: 'janet1993',
+      password: '123',
+    };
+  }
+
+  validateUser(username: string, password: string): any {
+    if (this.testUser.user == username && this.testUser.password === password ) {
+      return {
+        name: this.testUser.user,
+        password: this.testUser.password,
+      };
+    }
+  }
+
   login(user: User) {
     const payload = {
-      name: user.name,
-      mail: user.mail,
-      lastName: user.lastName,
-      birthday: user.birthday,
-      age: user.age,
-      gender: user.gender,
-      role: user.role,
+      user: user.user,
+      password: user.password,
     };
 
-    return payload;
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }

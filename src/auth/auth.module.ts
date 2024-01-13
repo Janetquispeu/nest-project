@@ -14,7 +14,9 @@ import { Register, RegisterSchema } from './schema/auth.schema';
       secret: '$P4L4bR45Up3RS3CR3T4%',
       signOptions: { expiresIn: '3600s' },
     }),
-    MongooseModule.forFeature([{ name: Register.name, schema: RegisterSchema }]),
+    MongooseModule.forFeature([
+      { name: Register.name, schema: RegisterSchema },
+    ]),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],

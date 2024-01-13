@@ -5,33 +5,28 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserRegisterDto } from './dto/create-user-register';
 import { InjectModel } from '@nestjs/mongoose';
 import { Register } from './schema/auth.schema';
+import { LoginUserDto } from './dto/login-user';
 
 @Injectable()
 export class AuthService {
-  testUser: User;
-
   constructor(
     private jwtService: JwtService,
     @InjectModel(Register.name) private registerModel: Model<Register>,
-  ) {
-    this.testUser = {
-      userName: 'janet1993',
-      password: '123',
-    };
+  ) {}
+
+  async findUserByUsername(username: string): Promise<any | null> {
+    return this.registerModel.findOne({ username }).exec();
   }
 
-  validateUser(username: string, password: string): any {
-    if (this.testUser.userName === username && this.testUser.password === password ) {
-      return {
-        name: this.testUser.userName,
-        password: this.testUser.password,
-      };
-    }
+  async validateUser(username: string, password: string) {
+    const user = await this.findUserByUsername(username);
+
+    return user;
   }
 
-  login(user: User) {
+  login(user: LoginUserDto) {
     const payload = {
-      username: user.userName,
+      username: user.username,
       password: user.password,
     };
 
@@ -40,9 +35,18 @@ export class AuthService {
     };
   }
 
-  async userRegister(createUserRegisterDto: CreateUserRegisterDto) {
-    console.log(createUserRegisterDto, 'createUserRegisterDto');
+  async userRegister(
+    createUserRegisterDto: CreateUserRegisterDto,
+  ): Promise<Register> {
     const createdUser = new this.registerModel(createUserRegisterDto);
     return createdUser.save();
+  }
+
+  async getUsers(): Promise<Register[]> {
+    return this.registerModel.find().exec();
+  }
+
+  async getUserById(params: { id: string }): Promise<Register> {
+    return this.registerModel.findById(params.id).lean();
   }
 }

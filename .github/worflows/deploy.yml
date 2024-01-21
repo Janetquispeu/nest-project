@@ -1,0 +1,29 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install AWS Lightsail 1
+        run: curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "/usr/local/bin/lightsailctl"
+
+      - name: Make Lightsail Plugin Executable
+        run: sudo chmod +x /usr/local/bin/lightsailctl
+
+      - name: Build the Image
+        run: docker build -t blog-container -f Dockerfile .
+
+      - name: Login to AWS and push to Lightsail
+        run: aws lightsail push-container-image --region us-east-1 --service-name container-service-1 --label blog-container2 --image blog-container:latest
+
+      - name: Make new deployment
+        run: chmod +x deploy_lightsail.sh && ./deploy_lightsail.sh

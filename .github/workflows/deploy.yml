@@ -24,6 +24,3 @@ jobs:
 
       - name: Login to AWS and push to Lightsail
         run: aws lightsail push-container-image --region us-east-1 --service-name container-service-1 --label blog-container2 --image blog-container:latest
-
-      - name: Make new deployment
-        run: chmod +x deploy_lightsail.sh && ./deploy_lightsail.sh

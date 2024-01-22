@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:5
+    container_name: mongoh
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: superAdmin
+      MONGO_INITDB_ROOT_PASSWORD: password1
+
+  blog:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: blog
+    container_name: blog
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=mongodb://mongo
+    ports:
+      - 3000:3000
+    depends_on: [ mongo ]

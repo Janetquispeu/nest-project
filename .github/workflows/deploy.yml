@@ -19,22 +19,8 @@ jobs:
       - name: Make Lightsail Plugin Executable
         run: sudo chmod +x /usr/local/bin/lightsailctl
 
-      - name: Install MongoDB Server
-        run: |
-          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 4B7C549A058F8B6B
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-org
-          sudo systemctl start mongod
-          sudo systemctl enable mongod
-
-      - name: Verify MongoDB Installation
-        run: |
-          mongod --version
-          mongo --version
-
-      - name: Build the Image
-        run: docker build -t blog-container -f Dockerfile .
+      - name: Build image
+        run: docker compose -f docker-compose.yml build
 
       - name: Login to AWS and push to Lightsail
-        run: aws lightsail push-container-image --region us-east-1 --service-name container-service-1 --label blog-container2 --image blog-container:latest
+        run: aws lightsail push-container-image --region us-east-1 --service-name container-service-1 --label nest-project-blog2 --image nest-project-blog:latest

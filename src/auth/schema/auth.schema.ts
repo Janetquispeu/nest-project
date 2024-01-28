@@ -12,7 +12,7 @@ export class Register {
   username: string;
 
   @Prop({ type: Boolean, required: true })
-  isAdmin: string;
+  isAdmin: boolean;
 }
 
 export const RegisterSchema = SchemaFactory.createForClass(Register);

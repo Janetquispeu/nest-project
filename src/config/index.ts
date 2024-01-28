@@ -1,4 +1,4 @@
-export default () => (console.log(process.env.MONGODB_URI, '----URI'),{
+export default () => ({
   appName: 'blog',
   http: {
     port: parseInt(process.env.PORT, 10) || 3000,

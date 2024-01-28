@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/types/user';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserRegisterDto } from './dto/create-user-register';
@@ -35,18 +35,87 @@ export class AuthService {
     };
   }
 
+  async addUser(createUserDTO: CreateUserRegisterDto): Promise<Register> {
+    const newUser = new this.registerModel(createUserDTO);
+    return newUser.save();
+  }
+
+  async doesUserExists(createUserRegisterDto: CreateUserRegisterDto): Promise<boolean> {
+    const user = await this.registerModel.findOne({ username: createUserRegisterDto.username });
+    if(user?.username){
+      return true;
+    }
+    return false;
+  }
+
   async userRegister(
+    res,
     createUserRegisterDto: CreateUserRegisterDto,
   ): Promise<Register> {
-    const createdUser = new this.registerModel(createUserRegisterDto);
-    return createdUser.save();
+    if(await this.doesUserExists(createUserRegisterDto)){
+      return res.status(HttpStatus.OK).json({
+        message: "User already exists"
+      });
+    }
+    const user = await this.addUser(createUserRegisterDto);
+    return res.status(HttpStatus.OK).json({
+      message: "User has been created successfully",
+      user
+    });
   }
 
-  async getUsers(): Promise<Register[]> {
-    return this.registerModel.find().exec();
+  async getUsers(res): Promise<Register[]> {
+    const users = await this.registerModel.find().exec();
+
+    return res.status(HttpStatus.OK).json({
+      data: users
+    });
   }
 
-  async getUserById(params: { id: string }): Promise<Register> {
-    return this.registerModel.findById(params.id).lean();
+  async getUserById(res, params: { id: string }): Promise<Register> {
+    let data = {};
+    const user = await this.registerModel.findOne({ _id: params.id }).exec();
+
+    if(!user) {
+      data = { message: "User does not exists" };
+    } else {
+      data = { user }
+    }
+    return res.status(HttpStatus.OK).json({
+      data
+    });
+  }
+
+  async updateUserById(id, body, req): Promise<Register> {
+    const existsId = await this.registerModel.findById(id);
+
+    if(existsId) {
+      const findUser = await this.registerModel.findOne({ username: req.username }).exec();
+      const user = findUser._id.toString() === id || findUser.isAdmin;
+
+      if (user) {
+        return await this.registerModel.findByIdAndUpdate({ _id: id }, body);
+      } else {
+        throw new UnauthorizedException();
+      }
+    } else {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+  }
+
+  async deleteById(id: string, req): Promise<Register> {
+    const findUser = await this.registerModel.findOne({ username: req.username }).exec();
+    const isAdmin = findUser.isAdmin;
+
+    if (isAdmin) {
+      const existsId = await this.registerModel.findById(id);
+      if (existsId) {
+        return this.registerModel.findByIdAndDelete({ _id: id }).lean();
+      } else {
+        throw new NotFoundException(`User with ID ${id} not found`);
+      }
+    } else {
+      throw new UnauthorizedException();
+    }
   }
 }

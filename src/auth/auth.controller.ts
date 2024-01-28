@@ -1,12 +1,16 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
+  Put,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { User } from 'src/types/user';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LocalAuthGuard } from './local-auth.guard';
@@ -16,8 +20,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('')
-  userRegister(@Body() body) {
-    this.authService.userRegister(body);
+  userRegister(@Res() res, @Body() body) {
+    this.authService.userRegister(res, body);
     return body;
   }
 
@@ -29,13 +33,25 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('')
-  getUsers() {
-    return this.authService.getUsers();
+  getUsers(@Res() res) {
+    return this.authService.getUsers(res);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  getUserById(@Param() id) {
-    return this.authService.getUserById(id);
+  getUserById(@Res() res, @Param() id) {
+    return this.authService.getUserById(res, id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async updateUserById(@Param('id') id, @Body() body: User, @Request() req) {
+    return await this.authService.updateUserById(id, body, req.user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id')
+  async deleteById(@Param('id') id, @Request() req) {
+    return await this.authService.deleteById(id, req.user);
   }
 }

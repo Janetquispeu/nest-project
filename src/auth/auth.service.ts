@@ -1,6 +1,5 @@
 import { Model } from 'mongoose';
 import { HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { User } from 'src/types/user';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserRegisterDto } from './dto/create-user-register';
 import { InjectModel } from '@nestjs/mongoose';
@@ -94,7 +93,7 @@ export class AuthService {
       const user = findUser._id.toString() === id || findUser.isAdmin;
 
       if (user) {
-        return await this.registerModel.findByIdAndUpdate({ _id: id }, body);
+        return await this.registerModel.findByIdAndUpdate({ _id: id }, body, { new: true });
       } else {
         throw new UnauthorizedException();
       }

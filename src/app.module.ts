@@ -5,7 +5,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
+import { PostsModule } from './posts/posts.module';
 import configuration from './config';
+import { PostsController } from './posts/posts.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,8 +20,9 @@ import configuration from './config';
       useFactory: (configService: ConfigService) => configService.get('db'),
       inject: [ConfigService],
     }),
+    PostsModule,
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController, AuthController, PostsController],
   providers: [AppService],
 })
 export class AppModule {}

@@ -1,5 +1,10 @@
 import { Model } from 'mongoose';
-import { HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserRegisterDto } from './dto/create-user-register';
 import { InjectModel } from '@nestjs/mongoose';

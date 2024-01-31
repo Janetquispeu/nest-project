@@ -11,8 +11,8 @@ import {
   Put
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { PostsService } from './posts.service';
-import { PostDto } from './dto/create-post.dto';
+import { PostsService } from '../service/posts.service';
+import { PostDto } from '../dto/create-post.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('Posts')
@@ -102,5 +102,35 @@ export class PostsController {
     @Request() req
   ) {
     return this.postsService.getPostByUser(userId, req.user);
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({ status: 403, description: 'Acceso denegado. No eres administrador.'})
+  @ApiResponse({ status: 200, description: 'Se obtuvieron los usuarios admin satisfactoriamente.'})
+  @ApiResponse({ status: 401, description: 'Unauthorized'})
+  @UseGuards(JwtAuthGuard)
+  @Get('/admin/users')
+  getAllUser() {
+    return this.postsService.getAllUser();
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({ status: 403, description: 'Acceso denegado. No eres administrador.'})
+  @ApiResponse({ status: 200, description: 'Se eliminó el usuario correctamente.'})
+  @ApiResponse({ status: 401, description: 'Unauthorized'})
+  @UseGuards(JwtAuthGuard)
+  @Delete('/admin/users/:id')
+  deleteAdminById(@Param('id') id: string) {
+    return this.postsService.deleteAdminById(id);
+  }
+
+  @ApiBearerAuth()
+  @ApiResponse({ status: 403, description: 'Acceso denegado. No eres administrador.'})
+  @ApiResponse({ status: 200, description: 'Se obtuvieron los posts correctamente.'})
+  @ApiResponse({ status: 401, description: 'Unauthorized'})
+  @UseGuards(JwtAuthGuard)
+  @Get('/admin/posts')
+  getAllPostsAdmin() {
+    return this.postsService.getAllPostsAdmin();
   }
 }

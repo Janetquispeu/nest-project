@@ -12,18 +12,17 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/types/user';
-import { AuthService } from './auth.service';
-import { CreateUserRegisterDto } from './dto/create-user-register';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { LocalAuthGuard } from './local-auth.guard';
+import { AuthService } from '../service/auth.service';
+import { CreateUserRegisterDto } from '../dto/create-user-register';
+import { JwtAuthGuard } from '../jwt-auth.guard';
+import { LocalAuthGuard } from '../local-auth.guard';
 
 @ApiTags('Users')
 @Controller('users')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiResponse({ status: 200, description: 'ok'})
-  @ApiResponse({ status: 401, description: 'Unauthorized'})
+  @ApiResponse({ status: 200, description: 'El usuario ha sido creado satisfactoriamente.'})
   @ApiBody({ type: CreateUserRegisterDto })
   @Post('')
   userRegister(@Res() res, @Body() body: CreateUserRegisterDto) {
@@ -40,7 +39,7 @@ export class AuthController {
   }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'ok'})
+  @ApiResponse({ status: 200, description: 'Se obtuvo los usuarios correctamente.'})
   @ApiResponse({ status: 401, description: 'Unauthorized'})
   @UseGuards(JwtAuthGuard)
   @Get('')
@@ -54,12 +53,12 @@ export class AuthController {
   @ApiParam({ name: 'id' })
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  getUserById(@Res() res, @Param() id) {
-    return this.authService.getUserById(res, id);
+  async getUserById(@Res() res, @Param() id, @Request() req) {
+    return await this.authService.getUserById(res, id, req.user);
   }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'ok'})
+  @ApiResponse({ status: 200, description: 'Se actualizó el usuario correctamente.'})
   @ApiResponse({ status: 401, description: 'Unauthorized'})
   @ApiParam({ name: 'id' })
   @ApiBody({ type: CreateUserRegisterDto })
@@ -70,12 +69,13 @@ export class AuthController {
   }
 
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'ok'})
+  @ApiResponse({ status: 200, description: 'Se eliminó el usuario correctamente.'})
   @ApiResponse({ status: 401, description: 'Unauthorized'})
+  @ApiResponse({ status: 403, description: 'Acceso denegado. No eres un administrador.'})
   @ApiParam({ name: 'id' })
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
-  async deleteById(@Param('id') id, @Request() req) {
-    return await this.authService.deleteById(id, req.user);
+  @Delete('delete/:id')
+  async deleteById(@Param('id') id) {
+    return await this.authService.deleteById(id);
   }
 }

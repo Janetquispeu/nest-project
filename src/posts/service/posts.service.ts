@@ -2,8 +2,8 @@ import { Model } from 'mongoose';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Register } from 'src/auth/schema/auth.schema';
-import { PostDto } from './dto/create-post.dto';
-import { Posts } from './schema/post.schema';
+import { PostDto } from '../dto/create-post.dto';
+import { Posts } from '../schema/post.schema';
 import { User } from 'src/types/user';
 
 @Injectable()
@@ -122,5 +122,27 @@ export class PostsService {
     } else {
       throw new UnauthorizedException();
     }
+  }
+
+  async getAllUser() {
+    return this.registerModel.find({ isAdmin: true }).exec();
+  }
+
+  async deleteAdminById(id: string) {
+    const data = await this.registerModel.findByIdAndDelete({ _id: id }).lean();
+
+    return {
+      message: "Se elimino el usuario correctamente.",
+      data 
+    };
+  }
+
+  async getAllPostsAdmin() {
+    const data =  await this.postsModel.find().exec();
+
+    return {
+      message: "Se obtuvieron los posts correctamente.",
+      data
+    };
   }
 }

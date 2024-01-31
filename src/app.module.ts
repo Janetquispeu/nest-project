@@ -3,11 +3,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthController } from './auth/auth.controller';
+import { AuthController } from './auth/controller/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import configuration from './config';
-import { PostsController } from './posts/posts.controller';
+import { PostsController } from './posts/controller/posts.controller';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,4 +26,5 @@ import { PostsController } from './posts/posts.controller';
   controllers: [AppController, AuthController, PostsController],
   providers: [AppService],
 })
+
 export class AppModule {}

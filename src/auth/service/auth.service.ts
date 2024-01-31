@@ -6,10 +6,10 @@ import {
   UnauthorizedException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserRegisterDto } from './dto/create-user-register';
+import { CreateUserRegisterDto } from '../dto/create-user-register';
 import { InjectModel } from '@nestjs/mongoose';
-import { Register } from './schema/auth.schema';
-import { LoginUserDto } from './dto/login-user';
+import { Register } from '../schema/auth.schema';
+import { LoginUserDto } from '../dto/login-user';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +31,8 @@ export class AuthService {
   login(user: LoginUserDto) {
     const payload = {
       username: user.username,
-      password: user.password,
+      isAdmin: user.isAdmin,
+      id: user._id.toString()
     };
 
     return {
@@ -63,7 +64,7 @@ export class AuthService {
     }
     const user = await this.addUser(createUserRegisterDto);
     return res.status(HttpStatus.OK).json({
-      message: "User has been created successfully",
+      message: "El usuario ha sido creado satisfactoriamente.",
       user
     });
   }
@@ -72,22 +73,30 @@ export class AuthService {
     const users = await this.registerModel.find().exec();
 
     return res.status(HttpStatus.OK).json({
-      data: users
+      data: users,
+      message: "Se obtuvo los usuarios correctamente."
     });
   }
 
-  async getUserById(res, params: { id: string }): Promise<Register> {
+  async getUserById(res, params: { id: string }, req): Promise<Register> {
     let data = {};
+    const findUser = await this.registerModel.findOne({ username: req.username }).exec();
+    const isAdmin = findUser.isAdmin;
     const user = await this.registerModel.findOne({ _id: params.id }).exec();
 
-    if(!user) {
-      data = { message: "User does not exists" };
+    if (isAdmin) {
+      if(!user) {
+        data = { message: "User does not exists" };
+      } else {
+        data = { user }
+      }
+
+      return res.status(HttpStatus.OK).json({
+        data
+      });
     } else {
-      data = { user }
+      throw new UnauthorizedException();
     }
-    return res.status(HttpStatus.OK).json({
-      data
-    });
   }
 
   async updateUserById(id, body, req): Promise<Register> {
@@ -107,19 +116,12 @@ export class AuthService {
     }
   }
 
-  async deleteById(id: string, req): Promise<Register> {
-    const findUser = await this.registerModel.findOne({ username: req.username }).exec();
-    const isAdmin = findUser.isAdmin;
-
-    if (isAdmin) {
-      const existsId = await this.registerModel.findById(id);
-      if (existsId) {
-        return this.registerModel.findByIdAndDelete({ _id: id }).lean();
-      } else {
-        throw new NotFoundException(`User with ID ${id} not found`);
-      }
-    } else {
-      throw new UnauthorizedException();
+  async deleteById(id: string) {
+    const user = await this.registerModel.findByIdAndDelete({ _id: id }).lean();
+    
+    return {
+      message: 'Se eliminó el usuario correctamente.',
+      data: user
     }
   }
 }

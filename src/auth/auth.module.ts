@@ -1,9 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuthService } from './auth.service';
+import { JwtModule } from '@nestjs/jwt';
+import * as passport from 'passport';
+import { AuthService } from './service/auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
-import { JwtModule } from '@nestjs/jwt';
+import { AdminMiddleware } from 'src/middleware/admin';
 import { LocalStrategy } from './local.strategy';
 import { jwtConstant } from './jwt.constant';
 import { Register, RegisterSchema } from './schema/auth.schema';
@@ -22,4 +24,15 @@ import { Register, RegisterSchema } from './schema/auth.schema';
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService],
 })
-export class AuthModule {}
+
+export class AuthModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+    .apply(passport.authenticate('jwt', { session: false })) // Utiliza la estrategia de autenticación deseada
+    .forRoutes('users/delete/*');
+
+    consumer
+    .apply(AdminMiddleware)
+    .forRoutes('users/delete/*');
+  }
+}

@@ -1,9 +1,9 @@
 import { Model } from 'mongoose';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Register } from 'src/auth/schema/auth.schema';
 import { PostDto } from '../dto/create-post.dto';
 import { Posts } from '../schema/post.schema';
+import { Register } from 'src/auth/schema/auth.schema';
 import { User } from 'src/types/user';
 
 @Injectable()
